@@ -1,0 +1,11 @@
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\bin\Debug\net8.0\AiConsultant.Core.deps.json
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\bin\Debug\net8.0\AiConsultant.Core.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\bin\Debug\net8.0\AiConsultant.Core.pdb
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.AssemblyInfoInputs.cache
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.AssemblyInfo.cs
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.csproj.CoreCompileInputs.cache
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\refint\AiConsultant.Core.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\AiConsultant.Core.pdb
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Core\obj\Debug\net8.0\ref\AiConsultant.Core.dll

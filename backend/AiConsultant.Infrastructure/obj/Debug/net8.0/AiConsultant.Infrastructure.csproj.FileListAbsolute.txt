@@ -1,0 +1,15 @@
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\bin\Debug\net8.0\AiConsultant.Infrastructure.deps.json
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\bin\Debug\net8.0\AiConsultant.Infrastructure.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\bin\Debug\net8.0\AiConsultant.Infrastructure.pdb
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\bin\Debug\net8.0\AiConsultant.Core.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\bin\Debug\net8.0\AiConsultant.Core.pdb
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.AssemblyInfo.cs
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsul.B0DE8172.Up2Date
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\refint\AiConsultant.Infrastructure.dll
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\AiConsultant.Infrastructure.pdb
+C:\Users\LENOVO YOGA\ai-consultant\backend\AiConsultant.Infrastructure\obj\Debug\net8.0\ref\AiConsultant.Infrastructure.dll
