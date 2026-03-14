@@ -9,9 +9,10 @@ services:
     environment:
       POSTGRES_DB: aiconsultant
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # No host port binding — DB is internal only
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -27,19 +28,20 @@ services:
       dockerfile: AiConsultant.API/Dockerfile
     container_name: aiconsultant_backend
     restart: unless-stopped
-    ports:
-      - "5000:8080"
+    # No host port binding — accessed through frontend nginx proxy
+    expose:
+      - "8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=aiconsultant;Username=postgres;Password=postgres123
-      - JwtSettings__SecretKey=your-super-secret-jwt-key-that-is-at-least-32-characters-long
-      - JwtSettings__Issuer=AiConsultantAPI
-      - JwtSettings__Audience=AiConsultantClient
-      - JwtSettings__ExpirationHours=24
-      - AdminSettings__Email=admin@aiconsultant.com
-      - AdminSettings__Password=Admin@123
-      - AllowedOrigins=http://localhost:3000,http://frontend:80
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - JwtSettings__SecretKey=${JwtSettings__SecretKey}
+      - JwtSettings__Issuer=${JwtSettings__Issuer:-AiConsultantAPI}
+      - JwtSettings__Audience=${JwtSettings__Audience:-AiConsultantClient}
+      - JwtSettings__ExpirationHours=${JwtSettings__ExpirationHours:-24}
+      - AdminSettings__Email=${AdminSettings__Email}
+      - AdminSettings__Password=${AdminSettings__Password}
+      - AllowedOrigins=${AllowedOrigins}
     depends_on:
       postgres:
         condition: service_healthy

@@ -48,7 +48,10 @@ apt install -y curl git ufw nginx certbot python3-certbot-nginx
 if ! command -v docker >/dev/null 2>&1; then
   curl -fsSL https://get.docker.com -o get-docker.sh
   sh get-docker.sh
-  usermod -aG docker ubuntu || true
+  # Add ubuntu user to docker group if it exists, otherwise assume root
+  if id ubuntu >/dev/null 2>&1; then
+    usermod -aG docker ubuntu
+  fi
 fi
 
 # Install docker compose plugin
@@ -66,57 +69,88 @@ ufw --force enable
 WORKDIR=/opt/ai-consultant
 rm -rf "$WORKDIR"
 mkdir -p "$WORKDIR"
-chown ubuntu:ubuntu "$WORKDIR"
+# Determine owner: ubuntu if exists, otherwise root
+if id ubuntu >/dev/null 2>&1; then
+  OWNER=ubuntu:ubuntu
+else
+  OWNER=root:root
+fi
+chown "$OWNER" "$WORKDIR"
+OWNER_USER="${OWNER%%:*}"
 
-sudo -u ubuntu git clone "$GIT_REPO" "$WORKDIR" || (cd "$WORKDIR" && sudo -u ubuntu git pull)
+if [[ "$OWNER_USER" == "root" ]]; then
+  git clone "$GIT_REPO" "$WORKDIR" || (cd "$WORKDIR" && git pull)
+else
+  sudo -u "$OWNER_USER" git clone "$GIT_REPO" "$WORKDIR" || (cd "$WORKDIR" && sudo -u "$OWNER_USER" git pull)
+fi
 
 # Create .env.production
 ENV_FILE="$WORKDIR/.env.production"
 if [[ -f "$ENV_FILE" ]]; then
   echo ".env.production already exists at $ENV_FILE; leave as is or edit manually."
 else
+  PG_PASS=$(openssl rand -base64 16)
+  JWT_KEY=$(openssl rand -base64 32)
   cat > "$ENV_FILE" <<EOF
 # Basic production env - EDIT these values
 ASPNETCORE_ENVIRONMENT=Production
 ASPNETCORE_URLS=http://+:8080
-ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=aiconsultant;Username=postgres;Password=postgres123
-JwtSettings__SecretKey=$(openssl rand -base64 32)
+
+# Postgres - POSTGRES_PASSWORD is used by both the postgres container and the connection string
+POSTGRES_PASSWORD=${PG_PASS}
+ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=aiconsultant;Username=postgres;Password=${PG_PASS}
+
+# JWT
+JwtSettings__SecretKey=${JWT_KEY}
 JwtSettings__Issuer=AiConsultantAPI
 JwtSettings__Audience=AiConsultantClient
 JwtSettings__ExpirationHours=24
+
+# Admin account seeded on startup
 AdminSettings__Email=admin@${DOMAIN}
 AdminSettings__Password=Admin@123
+
+# CORS - must match the public domain
 AllowedOrigins=https://${DOMAIN}
 EOF
-  chown ubuntu:ubuntu "$ENV_FILE"
+  chown "$OWNER" "$ENV_FILE"
+  chmod 600 "$ENV_FILE"
   echo "Created $ENV_FILE (please edit credentials if needed)."
 fi
 
 # Start docker compose
+# Bug fix: use $OWNER_USER (computed above) instead of hardcoded 'ubuntu'
 cd "$WORKDIR"
-# Use the compose file in repo root; ensure docker has permission
-sudo -u ubuntu docker compose --env-file "$ENV_FILE" up -d --build
+sudo -u "$OWNER_USER" docker compose --env-file "$ENV_FILE" up -d --build
 
 # Configure nginx site
+# Bug fix: use quoted heredoc (<<'EOF') so $host, $scheme etc. are treated as
+# Nginx variables, not expanded as empty shell variables.
 NGINX_CONF="/etc/nginx/sites-available/ai-consultant"
-cat > "$NGINX_CONF" <<EOF
+cat > "$NGINX_CONF" <<'NGINXEOF'
 server {
   listen 80;
-  server_name ${DOMAIN} www.${DOMAIN};
+  server_name DOMAIN_PLACEHOLDER www.DOMAIN_PLACEHOLDER;
 
-  location /api/ {
-    proxy_pass http://127.0.0.1:5000/;
+  # Forward everything to the frontend container (port 3000).
+  # The frontend's internal nginx already proxies /api/ to the backend,
+  # so there is no need to route /api/ separately here.
+  location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
     proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-  }
-
-  location / {
-    proxy_pass http://127.0.0.1:3000/;
-    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
   }
 }
-EOF
+NGINXEOF
+
+# Substitute the actual domain into the config (sed is safe here — no shell vars in content)
+sed -i "s/DOMAIN_PLACEHOLDER/${DOMAIN}/g" "$NGINX_CONF"
 
 ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/ai-consultant
 nginx -t && systemctl reload nginx

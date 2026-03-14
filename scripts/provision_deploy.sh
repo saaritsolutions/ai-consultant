@@ -85,6 +85,7 @@ fi
 
 echo "Waiting for droplet to get an IP..."
 # poll for public IP
+IP=""
 for i in {1..30}; do
   sleep 4
   IP=$(doctl compute droplet get "$DROPLET_ID" --format PublicIPv4 --no-header 2>/dev/null || true)
@@ -99,12 +100,33 @@ fi
 
 echo "Droplet available at $IP"
 
-echo "Copying bootstrap script to droplet and running it (this will prompt for sudo on remote)."
-scp scripts/bootstrap_server.sh ubuntu@${IP}:~/bootstrap_server.sh
+# Bug fix: wait for SSH to be ready before connecting.
+# Fresh droplets take 30-60 seconds after getting an IP before SSH is responsive.
+echo "Waiting for SSH to become available on $IP..."
+SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=8 -o BatchMode=yes"
+for i in {1..30}; do
+  if ssh $SSH_OPTS ubuntu@"$IP" "true" 2>/dev/null; then
+    echo "SSH is ready."
+    break
+  fi
+  echo -n '.'
+  sleep 5
+done
+
+# Verify SSH is actually up (fail fast if not)
+if ! ssh $SSH_OPTS ubuntu@"$IP" "true" 2>/dev/null; then
+  echo "SSH did not become available in time. Check your SSH key and droplet status." >&2
+  exit 1
+fi
+
+echo "Copying bootstrap script to droplet and running it."
+# Bug fix: add StrictHostKeyChecking=no so the script does not hang on first connect
+scp $SSH_OPTS scripts/bootstrap_server.sh ubuntu@"${IP}":~/bootstrap_server.sh
 
 # Build remote command with required args
-REMOTE_CMD="bash ~/bootstrap_server.sh --domain ${DOMAIN} --git-repo '${GIT_REPO}' --email '${EMAIL}'"
+# Bug fix: prefix with 'sudo' — bootstrap_server.sh requires root
+REMOTE_CMD="sudo bash ~/bootstrap_server.sh --domain ${DOMAIN} --git-repo '${GIT_REPO}' --email '${EMAIL}'"
 
-ssh ubuntu@${IP} "$REMOTE_CMD"
+ssh $SSH_OPTS ubuntu@"${IP}" "$REMOTE_CMD"
 
 echo "Provisioning and deployment finished. Visit: https://${DOMAIN} (give certbot a minute to finish)"

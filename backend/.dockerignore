@@ -1,0 +1,6 @@
+# Exclude local build artifacts from the Docker build context.
+# Without this, bin/ and obj/ directories are sent to the daemon
+# (wasted bandwidth and potentially stale files interfering with the build).
+**/bin/
+**/obj/
+**/.vs/
