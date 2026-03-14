@@ -6,11 +6,14 @@ services:
     image: postgres:16-alpine
     container_name: aiconsultant_db
     restart: unless-stopped
+    # env_file passes values LITERALLY (no $ interpolation) — critical for
+    # passwords that contain $ signs.
+    env_file: .env.production
     environment:
+      # These two are not in .env.production, so set them directly.
       POSTGRES_DB: aiconsultant
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    # No host port binding — DB is internal only
+      # POSTGRES_PASSWORD comes from env_file as a literal value.
     expose:
       - "5432"
     volumes:
@@ -28,20 +31,11 @@ services:
       dockerfile: AiConsultant.API/Dockerfile
     container_name: aiconsultant_backend
     restart: unless-stopped
-    # No host port binding — accessed through frontend nginx proxy
     expose:
       - "8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
-      - JwtSettings__SecretKey=${JwtSettings__SecretKey}
-      - JwtSettings__Issuer=${JwtSettings__Issuer:-AiConsultantAPI}
-      - JwtSettings__Audience=${JwtSettings__Audience:-AiConsultantClient}
-      - JwtSettings__ExpirationHours=${JwtSettings__ExpirationHours:-24}
-      - AdminSettings__Email=${AdminSettings__Email}
-      - AdminSettings__Password=${AdminSettings__Password}
-      - AllowedOrigins=${AllowedOrigins}
+    # env_file passes all values literally — ConnectionStrings, JwtSettings, etc.
+    # are forwarded to the container as-is, with no $ interpolation.
+    env_file: .env.production
     depends_on:
       postgres:
         condition: service_healthy
